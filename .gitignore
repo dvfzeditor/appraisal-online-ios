@@ -38,3 +38,6 @@ Thumbs.db
 
 # Claude Code agent worktrees (local tooling scratch space, not project content)
 .claude/worktrees/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
