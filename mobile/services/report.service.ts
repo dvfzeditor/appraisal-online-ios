@@ -27,29 +27,36 @@ const GEMINI_API_KEY =
 const GEMINI_API_URL =
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
 
+// First instant of the current calendar month, in the device's local time zone.
+function currentMonthStart(): Date {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
+// 'YYYY-MM-01' for the current local month. Built by hand: toISOString() on a
+// local-midnight date shifts back a day in UTC+ zones (e.g. the Philippines),
+// producing the previous month's last day as the key.
+function currentMonthKey(): string {
+  const start = currentMonthStart();
+  const mm = String(start.getMonth() + 1).padStart(2, '0');
+  return `${start.getFullYear()}-${mm}-01`;
+}
+
 export const reportService = {
-  // Check monthly allowance for free reports
+  // Check monthly allowance for free reports. Counts this month's reports
+  // straight from the reports table (the source of truth) rather than the
+  // report_allowance counter, which can drift if its increment fails.
   async checkReportAllowance(userId: string): Promise<{ allowed: boolean; remaining: number }> {
     try {
-      const today = new Date();
-      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-      const monthDate = monthStart.toISOString().split('T')[0];
-
-      const { data, error } = await supabase
-        .from('report_allowance')
-        .select('reports_used')
+      const { count, error } = await supabase
+        .from('reports')
+        .select('id', { count: 'exact', head: true })
         .eq('user_id', userId)
-        .eq('month', monthDate)
-        .single();
-
-      if (error && error.code === 'PGRST116') {
-        // No record found, return full allowance
-        return { allowed: true, remaining: 3 };
-      }
+        .gte('created_at', currentMonthStart().toISOString());
 
       if (error) throw error;
 
-      const used = data?.reports_used || 0;
+      const used = count ?? 0;
       const remaining = Math.max(0, 3 - used);
 
       return {
@@ -354,13 +361,9 @@ export const reportService = {
   // Increment report usage counter
   async incrementReportUsage(userId: string) {
     try {
-      const today = new Date();
-      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-      const monthDate = monthStart.toISOString().split('T')[0];
-
       const { error } = await supabase.rpc('increment_report_usage', {
         user_id_param: userId,
-        report_month: monthDate,
+        report_month: currentMonthKey(),
       });
 
       if (error) throw error;

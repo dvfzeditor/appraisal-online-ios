@@ -56,10 +56,6 @@ export default function ConsumerAccount() {
             }
 
             // Check free allowance
-            const today = new Date();
-            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-            const monthDate = monthStart.toISOString().split('T')[0];
-
             const allowanceData = await reportService.checkReportAllowance(user.id);
             setAllowance({
               used: 3 - (allowanceData.remaining || 0),
