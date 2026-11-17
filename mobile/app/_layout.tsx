@@ -1,7 +1,7 @@
 import 'react-native-url-polyfill/auto';
 import '../polyfills/alert';
 import React, { useEffect, useState } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import { View, Text } from 'react-native';
 import { useFonts } from 'expo-font';
 import { Archivo_400Regular, Archivo_500Medium, Archivo_600SemiBold, Archivo_700Bold } from '@expo-google-fonts/archivo';
@@ -12,6 +12,7 @@ import { supabase, getCurrentUser, isSupabaseConfigured } from '../services/supa
 import { useAuthStore } from '../stores/auth.store';
 import { brokerService } from '../services/broker.service';
 import { theme } from '../theme';
+import { brokerAccessEnabled, BROKER_WAITLIST_URL } from '../config/brokerAccess';
 
 // Initialize the Stripe SDK. lib/stripe is platform-split: on native this
 // calls the real @stripe/stripe-react-native initStripe(); on web it's a
@@ -37,6 +38,16 @@ export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
   const setUser = useAuthStore((state) => state.setUser);
   const setBrokerProfile = useAuthStore((state) => state.setBrokerProfile);
+
+  // On the public web build, broker screens are closed for now. Any /broker
+  // address is sent to the waitlist page instead (see config/brokerAccess.ts).
+  // The iPhone app never takes this path, because brokerAccessEnabled is true there.
+  const pathname = usePathname();
+  useEffect(() => {
+    if (!brokerAccessEnabled && pathname.startsWith('/broker')) {
+      (globalThis as { location?: { replace: (url: string) => void } }).location?.replace(BROKER_WAITLIST_URL);
+    }
+  }, [pathname]);
 
   // theme.ts's `font` object names these two faces by these exact export
   // names — the monochrome redesign's Archivo (body/heading) + Bodoni Moda

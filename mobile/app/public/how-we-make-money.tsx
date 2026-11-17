@@ -5,6 +5,7 @@ import { SafeAreaWrapper } from '../../components/layout/SafeAreaWrapper';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { theme } from '../../theme';
+import { brokerAccessEnabled } from '../../config/brokerAccess';
 
 export default function HowWeMakeMoney() {
   const router = useRouter();
@@ -146,13 +147,15 @@ export default function HowWeMakeMoney() {
           onPress={() => router.push('/welcome')}
           style={{ marginBottom: 12 }}
         />
-        <Button
-          title="Become a Broker Partner"
-          variant="secondary"
-          size="large"
-          onPress={() => router.push('/broker/splash')}
-          style={{ marginBottom: 12 }}
-        />
+        {brokerAccessEnabled && (
+          <Button
+            title="Become a Broker Partner"
+            variant="secondary"
+            size="large"
+            onPress={() => router.push('/broker/splash')}
+            style={{ marginBottom: 12 }}
+          />
+        )}
         <Button
           title="Back"
           variant="outline"

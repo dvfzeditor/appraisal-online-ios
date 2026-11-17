@@ -10,6 +10,7 @@ import { Card } from '../../components/ui/Card';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { CurrencyValue } from '../../components/ui/CurrencyValue';
 import { useAuthStore } from '../../stores/auth.store';
+import { brokerAccessEnabled } from '../../config/brokerAccess';
 import { useReportStore } from '../../stores/report.store';
 import { authService } from '../../services/auth.service';
 import { checkPasswordBreach } from '../../services/passwordBreach.service';
@@ -316,8 +317,12 @@ export default function SignupScreen() {
   // Choose role (welcome.tsx) already asked a broker which path they're on —
   // arriving here with that answer in hand should skip asking a second time.
   const { userType: userTypeParam } = useLocalSearchParams<{ userType?: string }>();
+  // On the public web build broker sign-up is closed (see config/brokerAccess.ts),
+  // so every visitor is treated as a homeowner there, whatever the URL asks for.
   const [userType, setUserType] = useState<'consumer' | 'broker' | null>(
-    userTypeParam === 'broker' || userTypeParam === 'consumer' ? userTypeParam : null
+    !brokerAccessEnabled
+      ? 'consumer'
+      : userTypeParam === 'broker' || userTypeParam === 'consumer' ? userTypeParam : null
   );
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -500,23 +505,25 @@ export default function SignupScreen() {
             </Text>
           </Card>
 
-          <Card
-            variant={userType === 'broker' ? 'elevated' : 'default'}
-            style={[
-              styles.typeCard,
-              userType === 'broker' && styles.typeCardSelected,
-            ]}
-          >
-            <Button
-              title="🏢 I'm a Real Estate Pro"
-              variant="outline"
-              size="large"
-              onPress={() => setUserType('broker')}
-            />
-            <Text style={styles.typeDescription}>
-              Get qualified leads and grow your business
-            </Text>
-          </Card>
+          {brokerAccessEnabled && (
+            <Card
+              variant={userType === 'broker' ? 'elevated' : 'default'}
+              style={[
+                styles.typeCard,
+                userType === 'broker' && styles.typeCardSelected,
+              ]}
+            >
+              <Button
+                title="🏢 I'm a Real Estate Pro"
+                variant="outline"
+                size="large"
+                onPress={() => setUserType('broker')}
+              />
+              <Text style={styles.typeDescription}>
+                Get qualified leads and grow your business
+              </Text>
+            </Card>
+          )}
         </View>
       </SafeAreaWrapper>
     );

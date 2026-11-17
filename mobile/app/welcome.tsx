@@ -5,6 +5,7 @@ import { SafeAreaWrapper } from '../components/layout/SafeAreaWrapper';
 import { Button } from '../components/ui/Button';
 import { setChosenRole } from '../utils/chosenRole';
 import { theme } from '../theme';
+import { brokerAccessEnabled } from '../config/brokerAccess';
 
 /**
  * Choose role — the first interactive screen, reached from Launch by a
@@ -44,10 +45,12 @@ export default function Welcome() {
           <Text style={styles.cardBody}>Get free AI valuations and connect with professionals</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card} onPress={() => choose('broker')} activeOpacity={0.7}>
-          <Text style={styles.cardTitle}>I'm a broker or agent</Text>
-          <Text style={styles.cardBody}>Get qualified leads and grow your business</Text>
-        </TouchableOpacity>
+        {brokerAccessEnabled && (
+          <TouchableOpacity style={styles.card} onPress={() => choose('broker')} activeOpacity={0.7}>
+            <Text style={styles.cardTitle}>I'm a broker or agent</Text>
+            <Text style={styles.cardBody}>Get qualified leads and grow your business</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <Text style={styles.signinLine}>

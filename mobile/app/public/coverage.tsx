@@ -11,6 +11,7 @@ import { withTimeout } from '../../services/withTimeout';
 import { ALL_COUNTRIES, countryFlagEmoji } from '../../config/countries';
 import { City } from '../../types';
 import { theme } from '../../theme';
+import { brokerAccessEnabled } from '../../config/brokerAccess';
 
 const COUNTRY_NAMES: Record<string, string> = Object.fromEntries(
   ALL_COUNTRIES.map((c) => [c.code, c.name])
@@ -156,12 +157,14 @@ export default function CoveragePage() {
           onPress={() => router.push('/welcome')}
           style={{ marginBottom: 12 }}
         />
-        <Button
-          title="Sign Up as a Broker or Agent"
-          variant="outline"
-          size="large"
-          onPress={() => router.push('/auth/signup?userType=broker')}
-        />
+        {brokerAccessEnabled && (
+          <Button
+            title="Sign Up as a Broker or Agent"
+            variant="outline"
+            size="large"
+            onPress={() => router.push('/auth/signup?userType=broker')}
+          />
+        )}
       </View>
     </SafeAreaWrapper>
   );
