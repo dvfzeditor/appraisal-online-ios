@@ -20,4 +20,4 @@ export const brokerAccessEnabled = Platform.OS !== 'web' || BROKER_WEB_OPEN;
  * is served from the homeowner web site (see mobile/public/partners.html
  * and the redirect in vercel.json).
  */
-export const BROKER_WAITLIST_URL = '/partners.html';
+export const BROKER_WAITLIST_URL = 'https://appraisal-online-landing.vercel.app/';

@@ -2,8 +2,8 @@
   "buildCommand": "cd mobile && npx expo export --platform web",
   "outputDirectory": "mobile/dist",
   "redirects": [
-    { "source": "/broker", "destination": "/partners.html", "permanent": false },
-    { "source": "/broker/:path*", "destination": "/partners.html", "permanent": false }
+    { "source": "/broker", "destination": "https://appraisal-online-landing.vercel.app/", "permanent": false },
+    { "source": "/broker/:path*", "destination": "https://appraisal-online-landing.vercel.app/", "permanent": false }
   ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
