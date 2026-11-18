@@ -127,9 +127,13 @@ export const reportService = {
       // one is deployed for other reasons), see backend/src/routes/valuation.ts
       // and mobile/services/payment.service.ts's authHeaders() pattern.
 
-      // If no API key, use mock valuation based on comparables
+      // No API key. Only development builds may use the mock valuation (for
+      // testing screens). A production build must never show made-up numbers.
       if (!GEMINI_API_KEY) {
-        return this.generateMockValuation(propertyDetails, comparables, countryCode);
+        if (__DEV__) {
+          return this.generateMockValuation(propertyDetails, comparables, countryCode);
+        }
+        return { success: false, error: 'Valuation service is not configured' };
       }
 
       const prompt = buildValuationPrompt(propertyDetails, location, countryCode);
@@ -207,16 +211,11 @@ export const reportService = {
         comparables: generatedComparables || comparables,
       };
     } catch (error) {
-      // Fall back to the mock valuation rather than surfacing failure to the
-      // caller. Without this, any real-API problem — no prepay credit, a rate
-      // limit, a model rename, a network blip — aborted report generation
-      // entirely: loading.tsx treats `success: false` here as a hard failure
-      // and throws, kicking the consumer back out mid-flow. A consumer asking
-      // for a home valuation should get a usable number over a broken screen;
-      // the mock result already carries `is_mock: true` in geminiResponse so
-      // this is never presented as if it were a real AI valuation.
-      console.error('Gemini valuation failed, falling back to mock valuation:', error);
-      return this.generateMockValuation(propertyDetails, comparables, countryCode);
+      // No mock fallback: a made-up valuation must never reach a homeowner, and
+      // a failed attempt must not create a report or use up a free one. The
+      // caller (loading.tsx) shows a retry message and saves nothing.
+      console.error('Gemini valuation failed:', error);
+      return { success: false, error };
     }
   },
 

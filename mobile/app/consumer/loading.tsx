@@ -89,7 +89,11 @@ export default function LoadingScreen() {
         );
 
         if (!valuationResult.success) {
-          throw new Error('Failed to generate valuation');
+          // Nothing has been saved yet, so no report is created and no free
+          // report is used. The consumer can simply try again.
+          throw new Error(
+            "We couldn't generate your valuation right now. No report was created and your free report was not used. Please try again."
+          );
         }
 
         const valuation = {
