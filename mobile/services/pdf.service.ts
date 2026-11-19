@@ -141,7 +141,7 @@ function printReportInBrowser(report: Report, property: Property | null, propert
   // Phones don't show a print dialog from a script call, so on a phone we open
   // the report with a short note explaining how to save it instead.
   const isPhone = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android|Mobi/i.test(navigator.userAgent);
-  const pageHtml = isPhone ? addSaveAsPdfNote(html) : html;
+  const pageHtml = withWebMargins(isPhone ? addSaveAsPdfNote(html) : html);
 
   // No `await` before this — some browsers only honor window.open as a
   // direct result of a user gesture (the button press that led here) and
@@ -157,6 +157,20 @@ function printReportInBrowser(report: Report, property: Property | null, propert
   if (!isPhone) {
     printWindow.print();
   }
+}
+
+/**
+ * Adds page margins for the web print. The report's own styles set the page
+ * margin to 0 (the native PDF renderer handles its own spacing), so the web
+ * version gets a margin here. The screen view also gets some padding so text
+ * doesn't touch the edges of a phone.
+ */
+function withWebMargins(html: string): string {
+  const extra =
+    '<style>@page { margin: 16mm 14mm; } ' +
+    '@media screen { body { padding: 16px; } } ' +
+    '@media print { body { padding: 0; } }</style>';
+  return html.replace(/<\/head>/i, extra + '</head>');
 }
 
 /** Adds a note at the top of the report, hidden when printed or saved. */
