@@ -160,16 +160,17 @@ function printReportInBrowser(report: Report, property: Property | null, propert
 }
 
 /**
- * Adds page margins for the web print. The report's own styles set the page
- * margin to 0 (the native PDF renderer handles its own spacing), so the web
- * version gets a margin here. The screen view also gets some padding so text
- * doesn't touch the edges of a phone.
+ * Adds margins for the web version. The report's own styles set the page
+ * margin to 0, and phones' Save as PDF ignores CSS page margins, so the margin
+ * is set as padding on the page itself. That works in desktop browsers and on
+ * phones alike. The native PDF output is not affected, since this is only used
+ * for the web version.
  */
 function withWebMargins(html: string): string {
   const extra =
-    '<style>@page { margin: 16mm 14mm; } ' +
+    '<style>' +
     '@media screen { body { padding: 16px; } } ' +
-    '@media print { body { padding: 0; } }</style>';
+    '@media print { body { padding: 16mm 14mm; } }</style>';
   return html.replace(/<\/head>/i, extra + '</head>');
 }
 
