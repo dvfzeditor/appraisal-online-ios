@@ -138,6 +138,11 @@ async function generateLocalPdf(
 function printReportInBrowser(report: Report, property: Property | null, propertyAddress: string): void {
   const html = buildReportHtml(report, property, propertyAddress);
 
+  // Phones don't show a print dialog from a script call, so on a phone we open
+  // the report with a short note explaining how to save it instead.
+  const isPhone = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android|Mobi/i.test(navigator.userAgent);
+  const pageHtml = isPhone ? addSaveAsPdfNote(html) : html;
+
   // No `await` before this — some browsers only honor window.open as a
   // direct result of a user gesture (the button press that led here) and
   // silently block it as a popup once a microtask/timer has intervened.
@@ -146,10 +151,23 @@ function printReportInBrowser(report: Report, property: Property | null, propert
     throw new Error('Please allow pop-ups for this site to save the report as a PDF.');
   }
 
-  printWindow.document.write(html);
+  printWindow.document.write(pageHtml);
   printWindow.document.close();
   printWindow.focus();
-  printWindow.print();
+  if (!isPhone) {
+    printWindow.print();
+  }
+}
+
+/** Adds a note at the top of the report, hidden when printed or saved. */
+function addSaveAsPdfNote(html: string): string {
+  const note =
+    '<div class="save-note" style="background:#fff8e1;border:1px solid #f0c36d;border-radius:8px;' +
+    'padding:12px 14px;margin:0 0 16px;font-family:sans-serif;font-size:14px;color:#5a3e00">' +
+    'To save this report as a PDF on your phone, use your browser menu (the Share button or the three dots) ' +
+    'and choose <b>Print</b>, then <b>Save as PDF</b>.</div>' +
+    '<style>@media print { .save-note { display: none; } }</style>';
+  return html.replace(/<body[^>]*>/i, (tag) => tag + note);
 }
 
 function escapeHtml(text: string): string {
