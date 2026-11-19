@@ -98,7 +98,9 @@ export default function PropertyDetails() {
     // rejects anything outside 1800-current, so an un-filled year can never
     // slip through to submission.
     year_built: 0,
-    property_type: market.propertyTypes[0],
+    // No default property type — like condition below, an explicit pick is
+    // required so the report never describes a property nobody chose.
+    property_type: '',
     // No default condition — validateAll requires an explicit selection
     // below rather than silently submitting "Good" for a property nobody
     // actually looked at.
@@ -246,7 +248,9 @@ export default function PropertyDetails() {
     ) {
       newErrors.year_built = `Please enter year between 1800 and ${new Date().getFullYear()}`;
     }
-    if (isOtherType && !customPropertyType.trim()) {
+    if (!formData.property_type) {
+      newErrors.property_type = 'Please select a property type';
+    } else if (isOtherType && !customPropertyType.trim()) {
       newErrors.property_type = 'Please specify the property type';
     }
     // No default condition (see formData above) — require an explicit pick
